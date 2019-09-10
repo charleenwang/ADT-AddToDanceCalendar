@@ -40,48 +40,45 @@ def main():
 
     service = build('calendar', 'v3', credentials=creds)
 
-    # Set this to the # of dances that you wanna add.
-    NUM_DANCES = 18
-    # Set this to the integer number of the first day of ADT!!!
-    START_DAY = 9
-    MONTH = 9
-    YEAR = 2019
-
+    # Inputs.   
+    dance = input("Event Name: ")
+    location = input("Location: ")
+    description = input("Description: ")
+    date = input("Date (enter as YYYY-MM-DD): ")
+    time = int(input("Time (24-hr): "))
     # Converts to datetime format.
-    string_dateTime = str(YEAR) + '-' + format_time(MONTH) + '-'
-
-    for x in range(NUM_DANCES):
-        # Inputs.
-        dance = input("Dance Name: ")
-        location = input("Location: ")
-        description = input("Choreographer(s): ")
-        day = int(input("Day (ex: 1 = Mon, 7 = Sun): "))
-        time = int(input("Time (24-hr): "))
-        # Converts to datetime format.
-        startTime = string_dateTime + str(START_DAY + day - 1) + 'T' + format_time(time) + ':00:00'
-        endTime = string_dateTime + str(START_DAY + day - 1) + 'T' + format_time(time + 1) + ':00:00'
-        # Creates calendar event metadata
-        event = {
-          'summary': dance,
-          'location': location,
-          'description': 'choreogs: ' + description,
-          'start': {
-            'dateTime': startTime,
-            'timeZone': 'America/New_York',
-          },
-          'end': {
-            'dateTime': endTime,
-            'timeZone': 'America/New_York',
-          },
-          'recurrence': [
-            'RRULE:FREQ=WEEKLY;COUNT=13;'
-          ],
-        }
-        # Creates the actual event
-        event = service.events().insert(calendarId='primary', body=event).execute()
-        print('Event created: ', (event.get('htmlLink')))
-
-        print("__________________________\n")
+    startTime = date + 'T' + format_time(time) + ':00:00'
+    endTime = date + 'T' + format_time(time + 1) + ':00:00'
+    # Handles recurrence
+    isReoccuring = input("Repeated event? (y/n): ")
+    frequency = 1
+    count = 1
+    if isReoccuring.lower() == "y":
+        frequency = int(input("frequency? (1 - Weekly, 2 - Daily): "))
+        count = int(input("Number of repeats: "))
+    freq = "WEEKLY"
+    if frequency == 2:
+        freq = "DAILY"
+    # Creates calendar event metadata
+    event = {
+      'summary': dance,
+      'location': location,
+      'description': ' ' + description,
+      'start': {
+        'dateTime': startTime,
+        'timeZone': 'America/New_York',
+      },
+      'end': {
+        'dateTime': endTime,
+        'timeZone': 'America/New_York',
+      },
+      'recurrence': [
+        'RRULE:FREQ=' + freq + ';COUNT=' + str(count) + ';'
+      ],
+    }
+    # Creates the actual event
+    event = service.events().insert(calendarId='primary', body=event).execute()
+    print('Event created: ', (event.get('htmlLink')))
 
 if __name__ == '__main__':
     main()
